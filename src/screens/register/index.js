@@ -41,22 +41,29 @@ class index extends Component{
         </View>
         <View>
         <Input
-          placeholderTextColor='#FFF'
+          inputContainerStyle={{borderBottomWidth:0}}
+          inputStyle={styles.textInput}
+          placeholderTextColor='#CCC'
           placeholder='Email'
           value={this.state.inputEmail}
           onChangeText={(val)=>this.setState({inputEmail:val})}
           />
         <Input
-          placeholderTextColor='#FFF'
+          inputContainerStyle={{borderBottomWidth:0}}
+          inputStyle={styles.textInput}
+          placeholderTextColor='#CCC'
           placeholder='Username'
           value={this.state.inputUsername}
           onChangeText={(val)=>this.setState({inputUsername:val})}
           />
         <Input
-          placeholderTextColor='#FFF'
+          inputContainerStyle={{borderBottomWidth:0}}
+          inputStyle={styles.textInput}
+          placeholderTextColor='#CCC'
           placeholder='Phone number'
           value={this.state.inputPhone}
           onChangeText={(val)=>this.setState({inputPhone:val})}
+          keyboardType="numeric"
         />
         </View>
         <View>
@@ -84,6 +91,13 @@ const styles = StyleSheet.create({
   logo:{
     fontSize:35,
     color:"#FFF"
+  },
+  textInput:{
+    color:"#000",
+    paddingHorizontal:10,
+    marginTop:5,
+    backgroundColor:"#FFF",
+    borderRadius:5,
   },
   button:{
     padding:10,

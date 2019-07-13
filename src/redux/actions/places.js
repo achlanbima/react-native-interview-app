@@ -49,7 +49,7 @@ export function getQuestion(data, nav){
 
 export function setAnswer(data){
   return(dispatch) => {
-    const {question_id, user_id, answer} = data
+    const {question_id, user_id, answer, attachment=""} = data
     dispatch({
       type: 'SET_ANSWERS',
       payload : axios.post(`${URL}/answer`, {

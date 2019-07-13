@@ -17,9 +17,9 @@ class index extends Component {
       answer :[],
       //
       checked:[],
-      
+      userId:"",
       //
-  }
+    }
   }
 
 
@@ -29,6 +29,9 @@ class index extends Component {
         page: this.state.page+1,
         answer: ''
       })
+    }else{
+      alert('terimakasih telah menjawab, kami akan segera menghubungi anda')
+      this.props.navigation.navigate('register')
     }
   }
 
@@ -41,31 +44,47 @@ class index extends Component {
     }
   }
 
-  _submit(questionId, userId, type){
+  _submit(questionId, userId, type, attachment=""){
     let data
-    if(this.state.answer.length!=0){
 
-      if(type=='multiple choice'){
+    if(attachment!=""){
+      data = {
+        question_id:questionId,
+        user_id:userId,
+        attachment
+      }
+      
+      this.props.setAnswer(data)
+        this.setState({
+        page:this.state.page+1,
+        answer: ''
+      })
+
+    }else{
+      
+      if(this.state.answer.length!=0){
+        
+        if(type=='multiple choice'){
           data = {
             question_id:questionId,
             user_id:userId,
             answer:this.state.answer,
           }
-      }else if(type == 'multi select'){
-        data = {
-          question_id:questionId,
-          user_id:userId,
-          answer:this.state.answer.join(''),
+        }else if(type == 'multi select'){
+          data = {
+            question_id:questionId,
+            user_id:userId,
+            answer:this.state.answer.join(''),
+          }
+        }else if(type == 'text'){
+          data = {
+            question_id:questionId,
+            user_id:userId,
+            answer:this.state.answer,
+          }
         }
-      }else if(type == 'text'){
-        data = {
-          question_id:questionId,
-          user_id:userId,
-          answer:this.state.answer,
-        }
-      }
-      this.props.setAnswer(data)
-      this.setState({
+        this.props.setAnswer(data)
+        this.setState({
         page:this.state.page+1,
         answer: ''
       })
@@ -73,7 +92,8 @@ class index extends Component {
       alert('Soal belum dijawab')
     }
   }
-
+  }
+  
   handleChange = (index) => {
     let checked = [...this.state.checked];
     checked[index] = !checked[index];
@@ -88,10 +108,23 @@ class index extends Component {
     this.setState({ checked });
   }
 
-  async startRecording() {
+  async startRecording(userId, questionId) {
     this.setState({ recording: true });
     // default to mp4 for android as codec is not set
     const { uri, codec = "mp4" } = await this.camera.recordAsync();
+    this.setState({ recording: false, processing: true });
+    const type = `video/${codec}`;
+
+    const data = new FormData();
+    data.append("video", {
+      name: "mobile-video-upload",
+      type,
+      uri
+    });
+
+    this._submit(questionId,userId,'record video', data)
+
+    this.setState({ processing: false });
   }
 
   stopRecording() {
@@ -109,27 +142,27 @@ class index extends Component {
     }else{
       if(this.props.fetched){
         const { recording, processing } = this.state;
-
+        
         button = (
           <TouchableOpacity
-            onPress={()=>this.startRecording()}
-            style={styles.capture}
+          onPress={()=>this.startRecording(questionId, this.userId)}
+          style={styles.capture}
           >
             <Text style={{ fontSize: 14 }}> RECORD </Text>
           </TouchableOpacity>
         );
-
+        
         if (recording) {
           button = (
             <TouchableOpacity
-              onPress={()=>this.stopRecording()}
-              style={styles.capture}
+            onPress={()=>this.stopRecording()}
+            style={styles.capture}
             >
               <Text style={{ fontSize: 14 }}> STOP </Text>
             </TouchableOpacity>
           );
         }
-
+        
         if (processing) {
           button = (
             <View style={styles.capture}>
@@ -140,6 +173,9 @@ class index extends Component {
         
         questionId = this.props.questions[this.state.page].id
         userId = this.props.userId
+        
+        // this.questionId=questionId
+        // this.userId=userId
         
         if(this.props.questions[this.state.page].type=='multiple choice'){
           
@@ -223,7 +259,9 @@ class index extends Component {
               
               </View>
             
-            ):(
+            ):
+              
+            (
               <View style={{flex:1}}>
                 <Counter
                   time={(this.props.questions[this.state.page].timer * 60)+0.1}
