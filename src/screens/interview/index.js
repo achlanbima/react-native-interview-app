@@ -123,6 +123,8 @@ class index extends Component {
     });
 
     this._submit(questionId,userId,'record video', data)
+    // console.log(questionId+' '+userId);
+    
 
     this.setState({ processing: false });
   }
@@ -143,9 +145,11 @@ class index extends Component {
       if(this.props.fetched){
         const { recording, processing } = this.state;
         
+        questionId = this.props.questions[this.state.page].id
+        userId = this.props.userId
         button = (
           <TouchableOpacity
-          onPress={()=>this.startRecording(questionId, this.userId)}
+          onPress={()=>this.startRecording(questionId, userId)}
           style={styles.capture}
           >
             <Text style={{ fontSize: 14 }}> RECORD </Text>
@@ -171,8 +175,6 @@ class index extends Component {
           );
         }
         
-        questionId = this.props.questions[this.state.page].id
-        userId = this.props.userId
         
         // this.questionId=questionId
         // this.userId=userId
@@ -303,7 +305,7 @@ class index extends Component {
           }
             
           
-            <View style={styles.btnNavContainer}>
+            {/* <View style={styles.btnNavContainer}>
                 <TouchableOpacity onPress={()=> this._backHandle()}>
                   <View style={styles.btnNav}>
                     <Text>Back</Text>
@@ -314,7 +316,7 @@ class index extends Component {
                     <Text>Next</Text>
                   </View>
                 </TouchableOpacity>
-              </View>
+              </View> */}
             
           </View>
         )

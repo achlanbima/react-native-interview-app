@@ -55,7 +55,8 @@ export function setAnswer(data){
       payload : axios.post(`${URL}/answer`, {
         question_id,
         user_id,
-        answer
+        answer,
+        attachment
       })
     })
     console.log(data);
