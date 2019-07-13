@@ -3,7 +3,9 @@ import { Text, View, TouchableOpacity, ActivityIndicator, StyleSheet, FlatList }
 import { connect } from 'react-redux'
 import RadioForm, {RadioButton, RadioButtonInput, RadioButtonLabel} from 'react-native-simple-radio-button';
 import { CheckBox, Input } from 'react-native-elements'
-import { RNCamera, FaceDetector } from 'react-native-camera';
+import { RNCamera, FaceDetector } from 'react-native-camera'
+import { setAnswer } from '../../redux/actions/places'
+import CountDown from 'react-native-countdown-component';
 
 
 class index extends Component {
@@ -25,7 +27,7 @@ class index extends Component {
     if(this.state.page < this.props.questions.length-1){
       this.setState({
         page: this.state.page+1,
-        answer: []
+        answer: ''
       })
     }
   }
@@ -34,13 +36,42 @@ class index extends Component {
     if(this.state.page > 0){
       this.setState({
         page: this.state.page-1,
-        answer: []
+        answer: ''
       })
     }
   }
 
-  _submit(questionId, userId){
-    alert(questionId+"\n"+userId+"\n"+this.state.answer)
+  _submit(questionId, userId, type){
+    let data
+    if(this.state.answer.length!=0){
+
+      if(type=='multiple choice'){
+          data = {
+            question_id:questionId,
+            user_id:userId,
+            answer:this.state.answer,
+          }
+      }else if(type == 'multi select'){
+        data = {
+          question_id:questionId,
+          user_id:userId,
+          answer:this.state.answer.join(''),
+        }
+      }else if(type == 'text'){
+        data = {
+          question_id:questionId,
+          user_id:userId,
+          answer:this.state.answer,
+        }
+      }
+      this.props.setAnswer(data)
+      this.setState({
+        page:this.state.page+1,
+        answer: ''
+      })
+    }else{
+      alert('Soal belum dijawab')
+    }
   }
 
   handleChange = (index) => {
@@ -56,6 +87,16 @@ class index extends Component {
     this.setState({ answer })
     this.setState({ checked });
   }
+
+  async startRecording() {
+    this.setState({ recording: true });
+    // default to mp4 for android as codec is not set
+    const { uri, codec = "mp4" } = await this.camera.recordAsync();
+  }
+
+  stopRecording() {
+    this.camera.stopRecording();
+  }
   
   
   render() {
@@ -67,7 +108,35 @@ class index extends Component {
       </View>)
     }else{
       if(this.props.fetched){
-        console.log(this.state.answer.join(''))
+        const { recording, processing } = this.state;
+
+        button = (
+          <TouchableOpacity
+            onPress={()=>this.startRecording()}
+            style={styles.capture}
+          >
+            <Text style={{ fontSize: 14 }}> RECORD </Text>
+          </TouchableOpacity>
+        );
+
+        if (recording) {
+          button = (
+            <TouchableOpacity
+              onPress={()=>this.stopRecording()}
+              style={styles.capture}
+            >
+              <Text style={{ fontSize: 14 }}> STOP </Text>
+            </TouchableOpacity>
+          );
+        }
+
+        if (processing) {
+          button = (
+            <View style={styles.capture}>
+              <ActivityIndicator animating size={18} />
+            </View>
+          );
+        }
         
         questionId = this.props.questions[this.state.page].id
         userId = this.props.userId
@@ -78,76 +147,163 @@ class index extends Component {
         let { data, checked } = this.state
         return (
           
-          <View>
+          <View style={styles.container}>
+            <View style={styles.header}>
+              <Text>Kerja Yuks</Text>
+            </View>
           {
             this.props.questions[this.state.page].type=='multiple choice'?(
-            <View>
+            <View  style={styles.descWrapper}>
+              <Counter
+                time={(this.props.questions[this.state.page].timer * 60)+0.1}
+                currentPage={this.state.page+1}
+                totalPage={this.props.questions.length}
+                finishEvent={()=> this._nextHandle()}
+              />
+              
               <MultipleChoice
               data={this.props.questions[this.state.page]}
               radioAction={(value) => {this.setState({answer:value})}}
               />
-              <TouchableOpacity onPress={()=>this._submit(questionId, userId)}>
+              <TouchableOpacity onPress={()=>this._submit(questionId, userId, 'multiple choice')}>
                 <View style={styles.btnSubmit}>
                   <Text>SUBMIT</Text>
                 </View>
               </TouchableOpacity>
+              
             </View>
           ):this.props.questions[this.state.page].type=='multi select'?(
-            <View>
-              <Text>{this.props.questions[this.state.page].description}</Text>
+            <View style={styles.descWrapper}>
+              <Counter
+                time={(this.props.questions[this.state.page].timer * 60)+0.2}
+                currentPage={this.state.page+1}
+                totalPage={this.props.questions.length}
+                finishEvent={()=>this._nextHandle()}
+              />
+              <Text style={styles.desc}>{this.props.questions[this.state.page].description}</Text>
               <FlatList
                 data={this.props.questions[this.state.page].options.split(',')}
                 extraData={this.state}
                 renderItem={({ item, index }) =>
                 <CheckBox
-                center
+                style={{width:'100%'}}
+                left
                 title={item}
                 onPress={() => this.handleChange(index)}
                   checked={checked[index]} />
                 }
               />
-              <TouchableOpacity onPress={()=>this._submit(questionId, userId)}>
+              <TouchableOpacity onPress={()=>this._submit(questionId, userId, 'multi select')}>
                 <View style={styles.btnSubmit}>
                   <Text>SUBMIT</Text>
                 </View>
               </TouchableOpacity>
+            
             </View>
             
             ):this.props.questions[this.state.page].type=='text'?(
-              <View>
-                <Text>{this.props.questions[this.state.page].description}</Text>
+              <View style={styles.descWrapper}>
+                <Counter
+                  time={(this.props.questions[this.state.page].timer * 60)+0.3}
+                  currentPage={this.state.page+1}
+                  totalPage={this.props.questions.length}
+                  finishEvent={()=>this._nextHandle()}
+                />
+                <Text style={styles.desc}>{this.props.questions[this.state.page].description}</Text>
                 <Input
-                  placeholder='BASIC INPUT'
+                  placeholder='Isi jawaban disini'
+                  value={this.state.answer}
+                  onChangeText={(val)=> this.setState({answer:val})}
                   />
-                <TouchableOpacity onPress={()=>this._submit(questionId, userId)}>
+                <TouchableOpacity onPress={()=>this._submit(questionId, userId, 'text')}>
                   <View style={styles.btnSubmit}>
                       <Text>SUBMIT</Text>
                     </View>
                   </TouchableOpacity>
+              
               </View>
             
-            ):
-              <Text>{this.props.questions[this.state.page].description}</Text>
+            ):(
+              <View style={{flex:1}}>
+                <Counter
+                  time={(this.props.questions[this.state.page].timer * 60)+0.1}
+                  currentPage={this.state.page+1}
+                  totalPage={this.props.questions.length}
+                  finishEvent={()=>this._nextHandle()}
+                />
+
+                <View style={{flex:1}}>
+                  <Text>{this.props.questions[this.state.page].description}</Text>
+                  
+                </View>
+                <View  style={{flex:1}}>
+
+                  <RNCamera
+                    ref={ref => {
+                      this.camera = ref;
+                    }}
+                    style={styles.preview}
+                    type={RNCamera.Constants.Type.front}
+                    flashMode={RNCamera.Constants.FlashMode.on}
+                    androidCameraPermissionOptions={{
+                      title: 'Permission to use camera',
+                      message: 'We need your permission to use your camera',
+                      buttonPositive: 'Ok',
+                      buttonNegative: 'Cancel',
+                    }}
+                    androidRecordAudioPermissionOptions={{
+                      title: 'Permission to use audio recording',
+                      message: 'We need your permission to use your audio',
+                      buttonPositive: 'Ok',
+                      buttonNegative: 'Cancel',
+                    }}
+                    />
+                  {button}
+                  </View>
+              </View>
+              )
           }
             
           
-            
             <View style={styles.btnNavContainer}>
-              <TouchableOpacity onPress={()=> this._backHandle()}>
-                <View style={styles.btnNav}>
-                  <Text>Back</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={()=> this._nextHandle()}>
-                <View style={styles.btnNav}>
-                  <Text>Next</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity onPress={()=> this._backHandle()}>
+                  <View style={styles.btnNav}>
+                    <Text>Back</Text>
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={()=> this._nextHandle()}>
+                  <View style={styles.btnNav}>
+                    <Text>Next</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            
           </View>
         )
       }
     }
+  }
+}
+
+class Counter extends Component{
+  render(){
+    return(
+      <View style={{flexDirection: 'row', justifyContent:"space-between", alignItems:"center"}}>
+        <Text>Question {this.props.currentPage} of {this.props.totalPage}</Text>
+        <CountDown
+          until={this.props.time}
+          onFinish={() => this.props.finishEvent()}
+          timeToShow={['M', 'S']}
+          timeLabels={{m: '', s: ''}}
+          size={15}
+          digitStyle={{backgroundColor: '#FFF'}}
+          digitTxtStyle={{color: '#000'}}
+          timeLabelStyle={{color: 'red', fontWeight: 'bold'}}
+          separatorStyle={{color: '#000'}}
+          showSeparator
+        />
+      </View>
+    )
   }
 }
 
@@ -162,37 +318,48 @@ class MultipleChoice extends Component{
     return(
       <View>
         <View>
-          <Text> {this.props.data.description}</Text>
+          <Text style={styles.desc}> {this.props.data.description}</Text>
         </View>
         <View>
-        <RadioForm
-          radio_props={radio_props}
-          initial={-1}
-          onPress={(value)=>this.props.radioAction(value)}
-        />
-        </View>
-        <View>
-          
+          <RadioForm
+            style={styles.radio}
+            radio_props={radio_props}
+            initial={-1}
+            onPress={(value)=>this.props.radioAction(value)}
+          />
         </View>
       </View>
     )
   }
 }
 
-const mapStateToProps = (state) => ({
-  questions : state.reducers.questions,
-  fetched : state.reducers.fetched,
-  fetching : state.reducers.fetching,
-  userId : 1
-})
 
-export default connect(mapStateToProps)(index)
 
 const styles = StyleSheet.create({
+  header:{
+    paddingHorizontal:20,
+    paddingVertical:15,
+    backgroundColor:"#41EAD4",
+    borderBottomWidth:0.5,
+    borderBottomColor:"#CCC"
+  },
+  descWrapper:{
+    // backgroundColor:"red",
+    padding:20,
+  },
+  desc:{
+    textAlign:"justify",
+    marginTop:10
+  },
   btnSubmit: {
     padding:10,
     alignItems:"center",
     backgroundColor:"#99F",
+    width:'94%',
+    marginLeft:'auto',
+    marginRight:'auto',
+    borderRadius:5,
+    marginTop:5
   },
 
   btnNavContainer:{
@@ -206,5 +373,45 @@ const styles = StyleSheet.create({
     padding:10,
     paddingHorizontal:30,
     borderRadius:5
+  },
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+  },
+  preview: {
+    flex: 5,
+    alignItems: 'center',
+    width:'100%'
+  },
+  capture: {
+    flex: 0,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    padding: 15,
+    paddingHorizontal: 20,
+    alignSelf: 'center',
+    margin: 20,
+  },
+  radio:{
+    padding:20,
   }
 })
+
+
+const mapDispatchToProps = dispatch => {
+  return {
+    setAnswer: (data) => {
+      dispatch(setAnswer(data))
+    }
+  }
+}
+
+const mapStateToProps = (state) => ({
+  questions : state.reducers.questions,
+  fetched : state.reducers.fetched,
+  fetching : state.reducers.fetching,
+  userId : state.reducers.user.id
+})
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(index)

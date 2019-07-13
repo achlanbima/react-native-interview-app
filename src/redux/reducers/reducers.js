@@ -1,8 +1,8 @@
-import { ADD_CROSSWORD, GET_CROSSWORD, ADD_ANSWERS } from '../actions/types'
 
 const initialState = {
   user:{},
   questions:[],
+  answers:[],
   fetching: false,
   fetched: false,
   error:null
@@ -37,7 +37,27 @@ const reducer = (state = initialState, action) => {
       return state
       break
        
-    return state
+    case 'SET_ANSWERS_PENDING':
+      state = {
+        ...state, fetching:true, answers: []
+      }
+      return state
+      break
+
+    case 'SET_ANSWERS_FULFILLED':
+      state = {
+        ...state, fetching:false, fetched:true, answers: action.payload.data.data
+      }
+      return state
+      break
+
+    case 'SET_ANSWERS_REJECTED':
+      state = {
+        ...state, fetching:false, error: action.payload
+      }
+      return state
+      break
+       
 
     
     default:
@@ -46,8 +66,3 @@ const reducer = (state = initialState, action) => {
 }
 
 export default reducer
-
-// const { navigation } = this.props
-    // this.column = navigation.getParam('column')
-    // const id = navigation.getParam('id')
-    // this.props.fetchData(id)

@@ -15,25 +15,25 @@ export function setUser(data, nav){
     const {username, email, phone_number} = data
     // console.log(nav);
     
-    nav.navigate('home')
+    // nav.navigate('home')
     
-    // axios.post(`${URL}/user`,{
-    //   username,
-    //   email,
-    //   phone_number
-    // }).then((res) => {
-    //   dispatch({
-    //     type : 'SET_USER',
-    //     payload : res.data.data
-    //   })
-    //   console.log(res.data.data);
+    axios.post(`${URL}/user`,{
+      username,
+      email,
+      phone_number
+    }).then((res) => {
+      dispatch({
+        type : 'SET_USER',
+        payload : res.data.data
+      })
+      console.log(res.data.data);
       
-    //   nav.navigate('home')
-    // })
-    // .catch((err) => {
-    //   console.log(err.response)
-    //   alert(err.response.data.message)
-    // })
+      nav.navigate('home')
+    })
+    .catch((err) => {
+      console.log(err.response)
+      alert(err.response.data.message)
+    })
   }
 }
 
@@ -47,6 +47,19 @@ export function getQuestion(data, nav){
   }
 }
 
-export function setAnswer(){
-  
+export function setAnswer(data){
+  return(dispatch) => {
+    const {question_id, user_id, answer} = data
+    dispatch({
+      type: 'SET_ANSWERS',
+      payload : axios.post(`${URL}/answer`, {
+        question_id,
+        user_id,
+        answer
+      })
+    })
+    console.log(data);
+    
+  }
 }
+

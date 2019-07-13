@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
-import { StyleSheet, Text, View, FlatList } from 'react-native'
+import { StyleSheet, View, FlatList } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { getQuestion } from '../../redux/actions/places';
 import { connect } from 'react-redux'
+import { Text } from 'react-native-elements'
 
 class index extends Component {
 
@@ -18,8 +19,8 @@ class index extends Component {
       available_pos : "Ngelap kesang dunungan"
     },
     {
-      company : "PT MENCARI CINTA SEJATI",
-      desc : "Masih ada yang pake ini di profile FB nya?",
+      company : "PT ABC DEFGHIJKLMN",
+      desc : "ini adalah perusahaan fiktif",
       available_pos : "All Position"
     },
   ]
@@ -31,15 +32,15 @@ class index extends Component {
 
   render() {
     return (
-      <View>
-        <Text> Home Here </Text>
+      <View style={styles.container}>
         <FlatList
           data={this.data}
           renderItem={({item}) => (
             <View style={styles.card}>
-              <Text>{item.company}</Text>
+              <Text h4>{item.company}</Text>
+              <Text h5>Deskripsi:</Text>
               <Text>{item.desc}</Text>
-              <Text>{item.available_pos}</Text>
+              <Text>Posisi : {item.available_pos}</Text>
               <TouchableOpacity onPress={()=> this._start()}>
                 <View style={styles.button}>
                   <Text>Start Interview</Text>
@@ -54,9 +55,21 @@ class index extends Component {
 }
 
 const styles = StyleSheet.create({
+  container:{
+    flex:1,
+    justifyContent:"center",
+    backgroundColor:"#41EAD4"
+  },
   card: {
     padding:10,
-
+    borderWidth:0.5,
+    width:'95%',
+    marginLeft:'auto',
+    marginRight:'auto',
+    marginTop:5,
+    borderRadius:5,
+    backgroundColor:'#FCFCFC',
+    borderColor:"#CCC"
   },
   button:{
     backgroundColor:"#99F",

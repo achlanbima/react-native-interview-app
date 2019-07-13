@@ -35,22 +35,25 @@ class index extends Component{
 
   render(){
     return(
-      <View>
-        <View>
-          <Text>REGISTER</Text>
+      <View style={styles.container}>
+        <View style={styles.logoWrapper}>
+          <Text style={styles.logo}>Kerja Yuks</Text>
         </View>
         <View>
         <Input
+          placeholderTextColor='#FFF'
           placeholder='Email'
           value={this.state.inputEmail}
           onChangeText={(val)=>this.setState({inputEmail:val})}
           />
         <Input
+          placeholderTextColor='#FFF'
           placeholder='Username'
           value={this.state.inputUsername}
           onChangeText={(val)=>this.setState({inputUsername:val})}
           />
         <Input
+          placeholderTextColor='#FFF'
           placeholder='Phone number'
           value={this.state.inputPhone}
           onChangeText={(val)=>this.setState({inputPhone:val})}
@@ -59,7 +62,7 @@ class index extends Component{
         <View>
           <TouchableOpacity onPress={()=> this._submit()}>
             <View style={styles.button}>
-              <Text>This is Button</Text>
+              <Text style={{color:'#FFF'}}>This is Button</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -69,6 +72,19 @@ class index extends Component{
 }
 
 const styles = StyleSheet.create({
+  container:{
+    flex:1,
+    justifyContent:"center",
+    marginTop:-100,
+    backgroundColor:"#41EAD4"
+  },
+  logoWrapper:{
+    alignItems:"center"
+  },
+  logo:{
+    fontSize:35,
+    color:"#FFF"
+  },
   button:{
     padding:10,
     justifyContent:"center",
@@ -78,6 +94,7 @@ const styles = StyleSheet.create({
     width:"95%",
     marginRight:"auto",
     marginLeft:"auto",
+    marginTop:10
   }
 });
 
